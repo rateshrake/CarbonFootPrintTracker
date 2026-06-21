@@ -25,6 +25,7 @@ export default function Navigation() {
                 className={`relative flex flex-col items-center gap-1 px-4 py-1 rounded-xl transition-colors ${
                   active ? 'text-accent-green' : 'text-text-muted hover:text-text-secondary'
                 }`}
+                whileHover={{ scale: 1.1, y: -2 }}
                 whileTap={{ scale: 0.9 }}
                 aria-label={`${tab.label} tab`}
                 aria-current={active ? 'page' : undefined}

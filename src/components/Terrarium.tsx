@@ -1,19 +1,40 @@
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useApp } from '../context/AppContext'
+import { Info } from 'lucide-react'
 
 const stageConfig = {
-  seedling: { emoji: '🌱', label: 'Seedling', scale: 0.7, color: '#00ff88' },
-  sprout: { emoji: '🌿', label: 'Sprout', scale: 1, color: '#00d4ff' },
-  mature: { emoji: '🌳', label: 'Mature', scale: 1.1, color: '#b388ff' },
+  seedling: { emoji: '🌱', label: 'Seedling', scale: 0.7, color: '#00ff88', nextAt: '4 actions to Sprout' },
+  sprout: { emoji: '🌿', label: 'Sprout', scale: 1, color: '#00d4ff', nextAt: '11 actions to Mature' },
+  mature: { emoji: '🌳', label: 'Mature', scale: 1.1, color: '#b388ff', nextAt: 'Fully grown!' },
 }
 
-export default function Terrarium() {
+interface TerrariumProps {
+  onTap?: () => void
+}
+
+export default function Terrarium({ onTap }: TerrariumProps) {
   const { terrariumStage, currentStreak, logs } = useApp()
   const config = stageConfig[terrariumStage]
+  const [bounce, setBounce] = useState(0)
+
+  const handleTap = () => {
+    setBounce(t => t + 1)
+    onTap?.()
+  }
 
   return (
     <div className="relative flex flex-col items-center" aria-label={`Terrarium: ${config.label}`}>
-      <div className="relative w-32 h-32 flex items-center justify-center">
+      <motion.div
+        className="relative w-32 h-32 flex items-center justify-center cursor-pointer"
+        onClick={handleTap}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.9 }}
+        role="button"
+        tabIndex={0}
+        aria-label={`Tap to see terrarium info. Current stage: ${config.label}`}
+        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') handleTap() }}
+      >
         <motion.div
           className="absolute inset-0 rounded-full"
           style={{
@@ -31,10 +52,10 @@ export default function Terrarium() {
         />
         <motion.span
           className="text-6xl relative z-10"
-          key={terrariumStage}
+          key={`${terrariumStage}-${bounce}`}
           initial={{ scale: 0, rotate: -20 }}
-          animate={{ scale: config.scale, rotate: 0 }}
-          transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+          animate={{ scale: config.scale, rotate: [0, -10, 10, -5, 0] }}
+          transition={{ type: 'spring', stiffness: 300, damping: 12 }}
           role="img"
           aria-label={config.label}
         >
@@ -60,19 +81,37 @@ export default function Terrarium() {
             ))}
           </motion.div>
         )}
-      </div>
+        <motion.div
+          className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-accent-green/20 flex items-center justify-center"
+          animate={{ opacity: [0.4, 1, 0.4] }}
+          transition={{ repeat: Infinity, duration: 2 }}
+        >
+          <Info size={10} className="text-accent-green" />
+        </motion.div>
+      </motion.div>
 
       <motion.p
-        className="text-xs font-medium tracking-wider uppercase mt-3"
+        className="text-xs font-medium tracking-wider uppercase mt-3 cursor-pointer"
         style={{ color: config.color }}
         animate={{ opacity: [0.6, 1, 0.6] }}
         transition={{ repeat: Infinity, duration: 3 }}
+        onClick={handleTap}
       >
         {config.label}
       </motion.p>
 
-      <div className="flex items-center gap-3 mt-3">
-        <div className="glass-card px-3 py-1.5 text-center">
+      <motion.div
+        className="flex items-center gap-3 mt-3"
+        initial={false}
+        animate={bounce > 0 ? { y: [0, -4, 0] } : {}}
+        transition={{ duration: 0.3 }}
+      >
+        <motion.div
+          className="glass-card px-3 py-1.5 text-center cursor-pointer"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={handleTap}
+        >
           <p className="text-text-muted text-[10px] uppercase tracking-wider">Streak</p>
           <motion.p
             className="text-lg font-bold text-accent-green"
@@ -83,12 +122,17 @@ export default function Terrarium() {
           >
             {currentStreak}
           </motion.p>
-        </div>
-        <div className="glass-card px-3 py-1.5 text-center">
+        </motion.div>
+        <motion.div
+          className="glass-card px-3 py-1.5 text-center cursor-pointer"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={handleTap}
+        >
           <p className="text-text-muted text-[10px] uppercase tracking-wider">Actions</p>
           <p className="text-lg font-bold text-accent-blue">{logs.length}</p>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       {terrariumStage === 'seedling' && logs.length === 0 && (
         <motion.p
@@ -97,7 +141,7 @@ export default function Terrarium() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
         >
-          Log your first activity below to grow your plant
+          Tap your plant to see growth progress
         </motion.p>
       )}
     </div>
