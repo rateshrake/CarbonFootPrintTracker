@@ -125,11 +125,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       timestamp: Date.now(),
     }
 
+    const nextCount = logs.length + 1
     setLogs(prev => [newLog, ...prev])
     setCurrentStreak(prev => Math.min(prev + 1, 30))
     setTerrariumStage(prev =>
-      prev === 'seedling' && logs.length > 3 ? 'sprout' :
-      prev === 'sprout' && logs.length > 10 ? 'mature' : prev
+      prev === 'seedling' && nextCount > 3 ? 'sprout' :
+      prev === 'sprout' && nextCount > 10 ? 'mature' : prev
     )
     setCarbonUsed(prev => Math.max(0, prev - carbonSaved))
     setCarbonScore(prev => Math.max(0, prev - carbonSaved / 10))

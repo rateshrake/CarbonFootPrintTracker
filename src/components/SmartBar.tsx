@@ -1,10 +1,10 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, memo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Sparkles, Send, Camera } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import CameraScanner from './CameraScanner'
 
-export default function SmartBar() {
+const SmartBar = memo(function SmartBar() {
   const { addLog } = useApp()
   const [input, setInput] = useState('')
   const [parsing, setParsing] = useState(false)
@@ -113,4 +113,6 @@ export default function SmartBar() {
       </AnimatePresence>
     </div>
   )
-}
+})
+
+export default SmartBar

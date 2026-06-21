@@ -5,7 +5,19 @@ import SmartBar from './SmartBar'
 import CameraScanner from './CameraScanner'
 import CarbonFloat from './CarbonFloat'
 import { useApp } from '../context/AppContext'
-import { Flame, Droplets, Zap, Camera } from 'lucide-react'
+import { Flame, Droplets, Zap, Camera, Dumbbell } from 'lucide-react'
+
+const physicalEquivalents = [
+  { min: 3, label: '🏋️ 100 L-Sits', desc: 'Burn calories, not carbon!' },
+  { min: 2, label: '🚴 30 min cycling', desc: 'Pedal power offsets your footprint' },
+  { min: 1.5, label: '🧘 45 min yoga', desc: 'Find your eco-zen' },
+  { min: 1, label: '🚶 20 min walk', desc: 'Every step counts' },
+  { min: 0, label: '🌱 1 tree planted', desc: 'Small actions, big impact' },
+]
+
+function getEquivalent(carbonSaved: number) {
+  return physicalEquivalents.find(eq => carbonSaved >= eq.min) ?? physicalEquivalents[physicalEquivalents.length - 1]
+}
 
 export default function Dashboard() {
   const { carbonScore, logs } = useApp()
@@ -70,9 +82,49 @@ export default function Dashboard() {
         })}
       </div>
 
+      {logs.length > 0 && (
+        <div className="w-full max-w-sm px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass-card p-4 border-accent-green/10 relative overflow-hidden"
+          >
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-r from-accent-green/5 via-transparent to-accent-blue/5"
+              animate={{ x: ['-100%', '100%'] }}
+              transition={{ repeat: Infinity, duration: 4, ease: 'linear' }}
+            />
+            <div className="relative flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-accent-orange/20 flex items-center justify-center shrink-0">
+                <Dumbbell size={18} className="text-accent-orange" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] uppercase tracking-wider text-text-muted font-medium">
+                  Burn Calories, Not Carbon
+                </p>
+                <motion.p
+                  key={logs[0]?.id}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-sm font-bold text-accent-green mt-1"
+                >
+                  {getEquivalent(logs[0]?.carbonSaved ?? 0).label}
+                </motion.p>
+                <p className="text-[10px] text-text-secondary mt-0.5">
+                  {getEquivalent(logs[0]?.carbonSaved ?? 0).desc}
+                </p>
+                <p className="text-[10px] text-text-muted mt-1">
+                  {logs[0]?.carbonSaved.toFixed(1)} kg CO₂ saved
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
       <SmartBar />
 
-      {logs.length > 0 && (
+      {logs.length > 1 && (
         <div className="w-full max-w-sm px-4">
           <p className="text-text-muted text-[10px] uppercase tracking-wider mb-3 font-medium">Recent Activity</p>
           <div className="flex flex-col gap-2">
